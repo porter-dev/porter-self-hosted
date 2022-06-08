@@ -62,6 +62,8 @@ server:
     # name: github-app-name
     # id: github-app-id
     # privateKey: github_app_private_key.pem
+  gitlab:
+    enabled: false
 
 imagePullSecrets: []
 nameOverride: ""
