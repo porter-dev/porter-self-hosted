@@ -223,6 +223,8 @@ spec:
           - name: github-app-private-key
             mountPath: /porter/docker
           {{- end }}
+          - name: ENABLE_GITLAB
+            value: "false"
       volumes:
       {{- if .Values.ingress.enabled }}
       - name: wss-ssl-certificate
