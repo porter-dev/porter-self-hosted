@@ -1,3 +1,4 @@
+{{- if not .Values.server.setAdminRBAC }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -9,7 +10,21 @@ rules:
     resources: ["namespaces"]
     verbs: ["get", "list", "create"]
   - apiGroups: [""]
-    resources: ["pods", "secrets", "configmaps", "pods/log", "pods/proxy", "pods/portforward", "pods/exec", "serviceaccounts", "services", "services/proxy"]
+    resources: [
+      "pods", 
+      "secrets", 
+      "configmaps", 
+      "pods/log", 
+      "pods/proxy", 
+      "pods/portforward", 
+      "pods/exec", 
+      "serviceaccounts", 
+      "services", 
+      "services/proxy",
+    ]
+    verbs: ["*"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
     verbs: ["*"]
   - apiGroups: ["apps"]
     resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
@@ -32,3 +47,4 @@ rules:
   {{- else }}
   []
   {{- end }}
+{{- end }}
