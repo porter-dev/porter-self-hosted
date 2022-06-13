@@ -17,6 +17,10 @@ server:
 
   port: 8080
 
+  # setAdminRBAC allows the Porter dashboard system:masters access to the cluster, otherwise a separate clusterrole
+  # is created for the Porter user.
+  setAdminRBAC: false
+
   postgres: {}
   # if bringing your own postgres:
     # port: 5432

@@ -4,9 +4,15 @@ metadata:
   name: {{ include "porter.fullname" . }}
   labels: {{- include "porter.labels" . | nindent 4 }}
 roleRef:
+  {{- if .Values.server.setAdminRBAC }}
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "cluster-admin"
+  {{- else }}
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ include "porter.fullname" . }}
+  {{- end }}
 subjects:
   - kind: ServiceAccount
     name: {{ template "porter.serviceAccountName" . }}
