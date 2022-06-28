@@ -1,0 +1,41 @@
+name: Push to Helm chart repo
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: New Porter image tag version
+        default: v0.30.0
+        required: true
+jobs:
+  build:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: azure/setup-helm@v1
+        with:
+          version: 'v3.3.4'
+      - name: Install yq
+        run: |
+          wget https://github.com/mikefarah/yq/releases/download/v4.7.1/yq_linux_amd64 -O ./yq
+          chmod +x ./yq
+          sudo mv ./yq /usr/local/bin/yq
+      - name: Bump the Porter image tag
+        run: |
+          yq eval ".image.tag = \"$PORTER_IMAGE_TAG\"" -i ./charts/porter/values.yaml
+      - name: Build modified charts
+        run: |
+          ./scripts/build.sh charts ${{ github.sha }} ${{ github.event.before }}
+        env:
+          CHARTMUSEUM_USERNAME: ${{ secrets.CHARTMUSEUM_SELF_HOSTED_USERNAME }}
+          CHARTMUSEUM_PASSWORD: ${{ secrets.CHARTMUSEUM_SELF_HOSTED_PASSWORD }}
+          CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_SELF_HOSTED_URL }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update Chart.yaml and values.yaml versions
+          commit_options: '--allow-empty'
+          file_pattern: "*/*/*.yaml"
+          commit_user_name: Porter Bot
+          commit_user_email: contact@getporter.dev
