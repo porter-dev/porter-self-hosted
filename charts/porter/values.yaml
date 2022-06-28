@@ -7,7 +7,7 @@ image:
   repository: porter1/porter
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.31.0"
+  tag: "v0.31.1"
 server:
   # initInCluster should be set to `true` if you want a default project created on the Porter instance 
   # to automatically connect to the k8s cluster that the Porter instance is running in. 
