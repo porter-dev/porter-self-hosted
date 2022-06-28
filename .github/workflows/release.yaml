@@ -24,7 +24,7 @@ jobs:
           sudo mv ./yq /usr/local/bin/yq
       - name: Bump the Porter image tag
         run: |
-          yq eval ".image.tag = \"$PORTER_IMAGE_TAG\"" -i ./charts/porter/values.yaml
+          yq eval ".image.tag = \"${{ github.event.inputs.version }}\"" -i ./charts/porter/values.yaml
       - name: Build modified charts
         run: |
           ./scripts/build.sh charts ${{ github.sha }} ${{ github.event.before }}
