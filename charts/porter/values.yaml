@@ -3,44 +3,36 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-
 image:
   repository: porter1/porter
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.18.0"
-
+  tag: "v0.31.0"
 server:
   # initInCluster should be set to `true` if you want a default project created on the Porter instance 
   # to automatically connect to the k8s cluster that the Porter instance is running in. 
   initInCluster: true
-
   port: 8080
-
   # setAdminRBAC allows the Porter dashboard system:masters access to the cluster, otherwise a separate clusterrole
   # is created for the Porter user.
   setAdminRBAC: false
-
   postgres: {}
   # if bringing your own postgres:
-    # port: 5432
-    # host: my-host
-    # name: porter
-    # user: porter
-    # password: porter
+  # port: 5432
+  # host: my-host
+  # name: porter
+  # user: porter
+  # password: porter
   cookieSecret: "random_hash_key_;random_block_key"
   dbEncryptionKey: "__random_strong_encryption_key__"
-
   # if key rotation is necessary
   # oldDBEncryptionKey: "__random_strong_encryption_key__"
   # newDBEncryptionKey: "__random_strong_encryption_key__"
-  
   tokenEncryptionKey: "secret"
   url: http://localhost:8080
-
   additionalEnv: {}
-    # COOKIE_INSECURE: true
-    # ADMIN_EMAIL: test@example.com
+  # COOKIE_INSECURE: true
+  # ADMIN_EMAIL: test@example.com
 
   # INTEGRATIONS:
   basicLogin:
@@ -68,11 +60,9 @@ server:
     # privateKey: github_app_private_key.pem
   gitlab:
     enabled: false
-
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -81,38 +71,34 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
-
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 service:
   type: ClusterIP
   port: 80
-
 ingress:
   enabled: false
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths: []
   tls:
-   # secret name must be porter-cert-tls
+  # secret name must be porter-cert-tls
   #  - secretName: porter-cert-tls
-    #  hosts:
-    #    - chart-example.local
-
+  #  hosts:
+  #    - chart-example.local
 resources:
   limits:
     cpu: 200m
@@ -120,20 +106,15 @@ resources:
   requests:
     cpu: 200m
     memory: 512Mi
-
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
-
 postgresql:
   enabled: true
   ssl_enabled: false
