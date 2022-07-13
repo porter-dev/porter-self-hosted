@@ -174,6 +174,8 @@ spec:
                 name: {{ include "porter.fullname" . }}-integration-keys
                 key: slack-client-secret
           {{- end }}
+          - name: ENABLE_GITLAB
+            value: {{ .Values.server.gitlab.enabled | default "false" | quote}}
           {{- if .Values.server.githubLogin.enabled }}
           - name: GITHUB_CLIENT_ID
             valueFrom:
