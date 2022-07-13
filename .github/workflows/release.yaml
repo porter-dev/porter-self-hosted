@@ -27,6 +27,9 @@ jobs:
       - name: Bump the Porter image tag
         run: |
           yq eval ".image.tag = \"${{ github.event.inputs.version }}\"" -i ./charts/porter/values.yaml
+      - name: Bump the Porter provisioner tag
+        run: |
+          yq eval ".provisioner.image.tag = \"${{ github.event.inputs.version }}\"" -i ./charts/porter/values.yaml
       - name: Build modified charts
         run: |
           ./scripts/build.sh charts ${{ github.sha }} ${{ github.event.before }}
