@@ -13,6 +13,12 @@ server:
   # to automatically connect to the k8s cluster that the Porter instance is running in. 
   initInCluster: true
   port: 8080
+
+  # Extra environment variables to pass to the server (if not supported in other blocks)
+  env:
+    normal:
+    synced:
+
   # setAdminRBAC allows the Porter dashboard system:masters access to the cluster, otherwise a separate clusterrole
   # is created for the Porter user.
   setAdminRBAC: false
@@ -25,6 +31,9 @@ server:
   # password: porter
   cookieSecret: "random_hash_key_;random_block_key"
   dbEncryptionKey: "__random_strong_encryption_key__"
+
+  sslCertificateName: porter-cert-tls
+
   # if key rotation is necessary
   # oldDBEncryptionKey: "__random_strong_encryption_key__"
   # newDBEncryptionKey: "__random_strong_encryption_key__"
@@ -58,6 +67,11 @@ server:
     # name: github-app-name
     # id: github-app-id
     # privateKey: github_app_private_key.pem
+
+    # If the Github app's private key is stored in a separate secret, it can be referenced
+    # through privateKeySecretName. The secret must contain the key "github_app_private_key.pem"
+    # privateKeySecretName: custom-secret-name
+
   gitlab:
     enabled: false
 imagePullSecrets: []
@@ -93,12 +107,28 @@ ingress:
   # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: [""]
+  tls:
+   # secret name must be porter-cert-tls
+  #  - secretName: porter-cert-tls
+    #  hosts:
+    #    - chart-example.local
+
+privateIngress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: [""]
   tls:
   # secret name must be porter-cert-tls
   #  - secretName: porter-cert-tls
-  #  hosts:
-  #    - chart-example.local
+    #  hosts:
+    #    - chart-example.local
+
+
 resources:
   limits:
     cpu: 200m
@@ -115,6 +145,54 @@ autoscaling:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+provisioner:
+  enabled: false
+  port: 8080
+
+  # Extra environment variables to pass to the provisioner (if not supported in other blocks)
+  env:
+    normal:
+    synced:
+  
+  staticAuthToken: "secret"
+  service:
+    type: ClusterIP
+    port: 8080
+  image:
+    repository: public.ecr.aws/o1j4x7p4/provisioner-service
+    tag: "v0.26.7"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  provisionerJob:
+    imageRepo: 313504253455.dkr.ecr.us-east-2.amazonaws.com/provisioner
+    imageTag: latest
+  s3:
+    # existingSecretName: s3-credentials-secret
+    # existingSecretRefs:
+    #   encryptionKey: "__random_strong_encryption_key__"
+    #   bucketName: TODO
+    #   region: TODO
+    #   accessKeyID: TODO
+    #   secretAccessKey: TODO
+    encryptionKey: "__random_strong_encryption_key__"
+    bucketName: TODO
+    region: TODO
+    accessKeyID: TODO
+    secretAccessKey: TODO
+  imagePullSecrets: []
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
 postgresql:
   enabled: true
   ssl_enabled: false
@@ -130,3 +208,7 @@ postgresql:
   persistence:
     enabled: true
     mountPath: "/data/"
+
+redis:
+  usePassword: true
+  password: redispassword

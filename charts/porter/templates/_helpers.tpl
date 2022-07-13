@@ -51,6 +51,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Provisioner selector labels
+*/}}
+{{- define "provisioner.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "porter.name" . }}-provisioner
+app.kubernetes.io/instance: {{ .Release.Name }}-provisioner
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "porter.serviceAccountName" -}}
@@ -64,4 +72,9 @@ Create the name of the service account to use
 {{- define "porter.postgresql.fullname" -}}
 {{- $name := default "postgresql" .Values.postgresql.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "porter.redis.fullname" -}}
+{{- $name := default "redis" .Values.redis.nameOverride -}}
+{{- printf "%s-%s-master" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
