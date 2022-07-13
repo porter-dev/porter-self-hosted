@@ -1,0 +1,21 @@
+{{- if .Values.workerPool.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: monitor-helm-release-revisions
+spec:
+  schedule: "0 0 * * *"
+    jobTemplate:
+    spec:
+      backoffLimit: 5
+      template:
+        spec:
+          serviceAccountName: {{ include "porter.fullname" . }}-worker-pool
+          containers:
+            - name: job
+              image: public.ecr.aws/o1j4x7p4/worker-pool:latest
+              imagePullPolicy: Always
+              command:
+              - curl -X POST "{{ include "porter.fullname" . }}-worker-pool.{{ .Release.Namespace }}/enqueue/helm-revisions-count-tracker"
+          restartPolicy: Never
+{{- end }}

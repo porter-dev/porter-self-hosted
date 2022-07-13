@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - uses: azure/setup-helm@v1
         with:
-          version: 'v3.3.4'
+          version: "v3.3.4"
       - name: Install yq
         run: |
           wget https://github.com/mikefarah/yq/releases/download/v4.7.1/yq_linux_amd64 -O ./yq
@@ -30,6 +30,9 @@ jobs:
       - name: Bump the Porter provisioner tag
         run: |
           yq eval ".provisioner.image.tag = \"${{ github.event.inputs.version }}\"" -i ./charts/porter/values.yaml
+      - name: Bump the Porter worker pool tag
+        run: |
+          yq eval ".workerPool.image.tag = \"${{ github.event.inputs.version }}\"" -i ./charts/porter/values.yaml
       - name: Build modified charts
         run: |
           ./scripts/build.sh charts ${{ github.sha }} ${{ github.event.before }}
@@ -40,7 +43,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update Chart.yaml and values.yaml versions
-          commit_options: '--allow-empty'
+          commit_options: "--allow-empty"
           file_pattern: "*/*/*.yaml"
           commit_user_name: Porter Bot
           commit_user_email: contact@getporter.dev
