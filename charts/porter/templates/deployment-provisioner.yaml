@@ -1,0 +1,202 @@
+{{- if .Values.provisioner.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "porter.fullname" . }}-provisioner
+  labels:
+    {{- include "porter.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "provisioner.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.provisioner.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "provisioner.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.provisioner.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "porter.fullname" . }}-provisioner
+      securityContext:
+        {{- toYaml .Values.provisioner.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.provisioner.securityContext | nindent 12 }}
+          image: "{{ .Values.provisioner.image.repository }}:{{ .Values.provisioner.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.provisioner.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.provisioner.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/livez
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/v1/readyz
+              port: http
+          env:
+          - name: DEBUG
+            value: "true"
+          - name: PROVISIONER_METHOD
+            value: kubernetes
+          - name: PROV_BACKEND_URL
+            value: "http://{{ include "porter.fullname" . }}-provisioner:{{ .Values.provisioner.port }}"
+          - name: PROV_CRED_EXCHANGE_URL
+            value: "http://{{ include "porter.fullname" . }}-provisioner:{{ .Values.provisioner.port }}"
+          - name: PROV_IMAGE_REPO
+            value: {{ .Values.provisioner.provisionerJob.imageRepo }}
+          - name: PROV_IMAGE_TAG
+            value: {{ .Values.provisioner.provisionerJob.imageTag }}
+          - name: PROV_PORT
+            value: {{ .Values.provisioner.port | quote }}
+          - name: STATIC_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-api-server-keys
+                key: provisioner-auth-token
+          - name: ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-api-server-keys
+                key: db-encryption-key
+          - name: SQL_LITE
+            value: "false"
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-db-secret
+                key: host
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-db-secret
+                key: name
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-db-secret
+                key: user
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-db-secret
+                key: password
+          {{- range $key, $val := .Values.provisioner.env.normal }}
+          - name: {{ $key }}
+          {{- $splVal := split "_" $val -}}
+          {{- if and (len $splVal | eq 2) (eq $splVal._0 "PORTERSECRET") }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $splVal._1 }}
+                key: {{ $key }}
+          {{- else }}
+            value: {{ quote $val }}
+          {{- end }}
+          {{- end }}
+          {{- range $syncedEnv := .Values.provisioner.env.synced }}
+          {{- range $key := $syncedEnv.keys }}
+          - name: {{ $key.name }}
+            {{- if $key.secret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s.v%d" $syncedEnv.name ($syncedEnv.version | int) }}
+                key: {{ $key.name }}
+            {{- else }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ printf "%s.v%d" $syncedEnv.name ($syncedEnv.version | int) }}
+                key: {{ $key.name }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+          {{ with $s3 := .Values.provisioner.s3 }}
+          - name: S3_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                {{- if and $s3.existingSecretName  ($s3.existingSecretRefs).accessKeyID }}
+                name: {{ $s3.existingSecretName }}
+                key: {{ $s3.existingSecretRefs.accessKeyID }}
+                {{- else }}
+                name: {{ include "porter.fullname" $ }}-provisioner-keys
+                key: s3-access-key-id
+                {{- end }}
+          - name: S3_AWS_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if and $s3.existingSecretName  ($s3.existingSecretRefs).secretAccessKey }}
+                name: {{ $s3.existingSecretName }}
+                key: {{ $s3.existingSecretRefs.secretAccessKey }}
+                {{- else }}
+                name: {{ include "porter.fullname" $ }}-provisioner-keys
+                key: s3-secret-access-key
+                {{- end }}
+          - name: S3_AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                {{- if and $s3.existingSecretName  ($s3.existingSecretRefs).region }}
+                name: {{ $s3.existingSecretName }}
+                key: {{ $s3.existingSecretRefs.region }}
+                {{- else }}
+                name: {{ include "porter.fullname" $ }}-provisioner-keys
+                key: s3-region
+                {{- end }}
+          - name: S3_BUCKET_NAME
+            valueFrom:
+              secretKeyRef:
+                {{- if and $s3.existingSecretName  ($s3.existingSecretRefs).bucketName }}
+                name: {{ $s3.existingSecretName }}
+                key: {{ $s3.existingSecretRefs.bucketName }}
+                {{- else }}
+                name: {{ include "porter.fullname" $ }}-provisioner-keys
+                key: s3-bucket-name
+                {{- end }}
+          - name: S3_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if and $s3.existingSecretName  ($s3.existingSecretRefs).encryptionKey }}
+                name: {{ $s3.existingSecretName }}
+                key: {{ $s3.existingSecretRefs.encryptionKey }}
+                {{- else }}
+                name: {{ include "porter.fullname" $ }}-provisioner-keys
+                key: s3-encryption-key
+                {{- end }}
+          {{- end }}
+          - name: REDIS_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-provisioner-keys
+                key: redis-host
+          - name: REDIS_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-provisioner-keys
+                key: redis-password
+          - name: REDIS_USER
+            value: default
+          resources:
+            {{- toYaml .Values.provisioner.resources | nindent 12 }}
+      {{- with .Values.provisioner.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.provisioner.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.provisioner.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

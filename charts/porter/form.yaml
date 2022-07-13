@@ -1,0 +1,24 @@
+name: Porter
+hasSource: false
+tabs:
+  - name: env
+    label: Environment
+    sections:
+      - name: server_env_vars
+        contents:
+          - type: heading
+            label: Server Environment Variables
+          - type: subtitle
+            label: Set environment variables for the Porter server.
+          - type: env-key-value-array
+            label:
+            variable: server.env
+      - name: provisioner_env_vars
+        contents:
+          - type: heading
+            label: Provisioner Environment Variables
+          - type: subtitle
+            label: Set environment variables for the Porter provisioner.
+          - type: env-key-value-array
+            label:
+            variable: provisioner.env

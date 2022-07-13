@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.privateIngress.enabled -}}
 {{- $fullName := include "porter.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
@@ -10,20 +10,18 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-private
   labels:
     {{- include "porter.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.privateIngress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.ingressClass }}
-  ingressClassName: {{ .Values.ingress.ingressClass }}
-  {{- end }}
-  {{- if .Values.ingress.tls }}
+  ingressClassName: {{ .Values.privateIngress.privateIngressClass }}
+  {{- if .Values.privateIngress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.privateIngress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -32,7 +30,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.privateIngress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -52,5 +50,5 @@ spec:
             servicePort: {{ $svcPort }}
             {{- end }}
           {{- end }}
-      {{- end }}
+        {{- end }}
     {{- end }}

@@ -97,6 +97,34 @@ spec:
               secretKeyRef:
                 name: {{ include "porter.fullname" . }}-api-server-keys
                 key: cookie-secrets
+          {{- range $key, $val := .Values.server.env.normal }}
+          - name: {{ $key }}
+          {{- $splVal := split "_" $val -}}
+          {{- if and (len $splVal | eq 2) (eq $splVal._0 "PORTERSECRET") }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $splVal._1 }}
+                key: {{ $key }}
+          {{- else }}
+            value: {{ quote $val }}
+          {{- end }}
+          {{- end }}
+          {{- range $syncedEnv := .Values.server.env.synced }}
+          {{- range $key := $syncedEnv.keys }}
+          - name: {{ $key.name }}
+            {{- if $key.secret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s.v%d" $syncedEnv.name ($syncedEnv.version | int) }}
+                key: {{ $key.name }}
+            {{- else }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ printf "%s.v%d" $syncedEnv.name ($syncedEnv.version | int) }}
+                key: {{ $key.name }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
           - name: ENCRYPTION_KEY
             valueFrom:
               secretKeyRef:
@@ -204,6 +232,15 @@ spec:
           - name: GITHUB_APP_SECRET_PATH
             value: /porter/docker/github_app_private_key.pem
           {{- end }}
+          {{- if .Values.provisioner.enabled }}
+          - name: PROVISIONER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "porter.fullname" . }}-api-server-keys
+                key: provisioner-auth-token
+          - name: PROVISIONER_SERVER_URL
+            value: "http://{{ include "porter.fullname" . }}-provisioner:{{ .Values.provisioner.port }}"
+          {{- end }}
           {{- if .Values.server.initInCluster }}
           - name: INIT_IN_CLUSTER
             value: "true"
@@ -219,7 +256,7 @@ spec:
           - name: wss-ssl-certificate
             mountPath: /etc/wss
           {{- end }}
-          {{- if .Values.server.githubApp.enabled }}
+          {{- if or .Values.server.githubApp.privateKeySecretName .Values.server.githubApp.enabled }}
           - name: github-app-private-key
             mountPath: /porter/docker
           {{- end }}
@@ -227,9 +264,16 @@ spec:
       {{- if .Values.ingress.enabled }}
       - name: wss-ssl-certificate
         secret:
-          secretName: porter-cert-tls
+          secretName: {{ .Values.server.sslCertificateName }}
       {{- end }}
-      {{- if .Values.server.githubApp.enabled }}
+      {{- if .Values.server.githubApp.privateKeySecretName }}
+      - name: github-app-private-key
+        secret:
+          secretName: {{ .Values.server.githubApp.privateKeySecretName }}
+          items:
+          - key: github_app_private_key.pem
+            path: github_app_private_key.pem
+      {{- else if .Values.server.githubApp.enabled }}
       - name: github-app-private-key
         secret:
           secretName: {{ include "porter.fullname" . }}-integration-keys
