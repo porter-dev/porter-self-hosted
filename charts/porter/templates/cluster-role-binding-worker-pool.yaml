@@ -1,0 +1,15 @@
+{{- if .Values.workerPool.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "porter.fullname" . }}-worker-pool
+  labels: {{- include "porter.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "porter.fullname" . }}-worker-pool
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "porter.fullname" . }}-worker-pool
+    namespace: {{ .Release.Namespace }}
+{{- end }}
