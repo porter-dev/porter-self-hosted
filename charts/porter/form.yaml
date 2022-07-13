@@ -22,3 +22,12 @@ tabs:
           - type: env-key-value-array
             label:
             variable: provisioner.env
+      - name: worker_pool_env_vars
+        contents:
+          - type: heading
+            label: Worker Pool Environment Variables
+          - type: subtitle
+            label: Set environment variables for the Porter worker pool.
+          - type: env-key-value-array
+            label:
+            variable: workerPool.env

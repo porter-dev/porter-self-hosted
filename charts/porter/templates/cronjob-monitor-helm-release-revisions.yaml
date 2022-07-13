@@ -1,11 +1,11 @@
 {{- if .Values.workerPool.enabled -}}
-apiVersion: batch/v1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: monitor-helm-release-revisions
 spec:
   schedule: "0 0 * * *"
-    jobTemplate:
+  jobTemplate:
     spec:
       backoffLimit: 5
       template:
