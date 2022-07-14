@@ -8,7 +8,7 @@ metadata:
 spec:
   type: {{ .Values.workerPool.service.type }}
   ports:
-    - port: {{ .Values.workerPool.service.port }}
+    - port: 80
       targetPort: http
       protocol: TCP
       name: http

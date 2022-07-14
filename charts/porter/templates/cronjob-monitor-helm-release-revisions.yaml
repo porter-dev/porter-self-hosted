@@ -4,7 +4,7 @@ kind: CronJob
 metadata:
   name: monitor-helm-release-revisions
 spec:
-  schedule: "0 0 * * *"
+  schedule: {{ .Values.workerPool.schedule }}
   jobTemplate:
     spec:
       backoffLimit: 5
@@ -13,9 +13,13 @@ spec:
           serviceAccountName: {{ include "porter.fullname" . }}-worker-pool
           containers:
             - name: job
-              image: public.ecr.aws/o1j4x7p4/worker-pool:latest
+              image: "{{ .Values.workerPool.image.repository }}:{{ .Values.workerPool.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: Always
               command:
-              - curl -X POST "{{ include "porter.fullname" . }}-worker-pool.{{ .Release.Namespace }}/enqueue/helm-revisions-count-tracker"
+              - curl 
+              args:
+              - -X 
+              - POST 
+              - "{{ include "porter.fullname" . }}-worker-pool.{{ .Release.Namespace }}/enqueue/helm-revisions-count-tracker"
           restartPolicy: Never
 {{- end }}

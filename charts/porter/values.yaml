@@ -217,6 +217,8 @@ workerPool:
   enabled: false
   port: 3000
 
+  schedule: 0 * * * *
+
   image:
     repository: public.ecr.aws/o1j4x7p4/worker-pool
     pullPolicy: IfNotPresent
