@@ -1,8 +1,8 @@
 name: Porter
 hasSource: false
 tabs:
-  - name: env
-    label: Environment
+  - name: server
+    label: Server
     sections:
       - name: server_env_vars
         contents:
@@ -13,6 +13,9 @@ tabs:
           - type: env-key-value-array
             label:
             variable: server.env
+  - name: provisioner
+    label: Provisioner
+    sections:
       - name: provisioner_env_vars
         contents:
           - type: heading
@@ -22,3 +25,27 @@ tabs:
           - type: env-key-value-array
             label:
             variable: provisioner.env
+  - name: worker
+    label: Worker
+    sections:
+      - name: worker_pool_env_vars
+        contents:
+          - type: heading
+            label: Worker Pool Environment Variables
+          - type: subtitle
+            label: Set environment variables for the Porter worker pool.
+          - type: env-key-value-array
+            label:
+            variable: workerPool.env
+      - name: cron_job
+        contents:
+        - type: heading
+          label: Revision Job Schedule
+        - type: subtitle
+          label: Set the schedule for the revision tracking job.
+        - type: cron
+          label: Schedule
+          variable: workerPool.schedule
+          placeholder: "ex: 0 * * * *"
+          settings:
+            default: "0 * * * *"

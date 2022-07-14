@@ -59,6 +59,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}-provisioner
 {{- end }}
 
 {{/*
+Worker pool selector labels
+*/}}
+{{- define "workerPool.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "porter.name" . }}-worker-pool
+app.kubernetes.io/instance: {{ .Release.Name }}-worker-pool
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "porter.serviceAccountName" -}}

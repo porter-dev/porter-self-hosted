@@ -9,8 +9,8 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v0.32.6"
 server:
-  # initInCluster should be set to `true` if you want a default project created on the Porter instance 
-  # to automatically connect to the k8s cluster that the Porter instance is running in. 
+  # initInCluster should be set to `true` if you want a default project created on the Porter instance
+  # to automatically connect to the k8s cluster that the Porter instance is running in.
   initInCluster: true
   port: 8080
 
@@ -109,14 +109,15 @@ ingress:
     - host: chart-example.local
       paths: [""]
   tls:
-   # secret name must be porter-cert-tls
+    # secret name must be porter-cert-tls
   #  - secretName: porter-cert-tls
-    #  hosts:
-    #    - chart-example.local
+  #  hosts:
+  #    - chart-example.local
 
 privateIngress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -125,9 +126,8 @@ privateIngress:
   tls:
   # secret name must be porter-cert-tls
   #  - secretName: porter-cert-tls
-    #  hosts:
-    #    - chart-example.local
-
+  #  hosts:
+  #    - chart-example.local
 
 resources:
   limits:
@@ -154,7 +154,7 @@ provisioner:
   env:
     normal:
     synced:
-  
+
   staticAuthToken: "secret"
   service:
     type: ClusterIP
@@ -212,3 +212,38 @@ postgresql:
 redis:
   usePassword: true
   password: redispassword
+
+workerPool:
+  enabled: false
+  port: 3000
+
+  schedule: 0 * * * *
+
+  image:
+    repository: public.ecr.aws/o1j4x7p4/worker-pool
+    pullPolicy: IfNotPresent
+    tag: "v0.33.0"
+
+  env:
+    normal:
+    synced:
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+  imagePullSecrets: []
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

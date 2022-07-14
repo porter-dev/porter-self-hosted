@@ -1,0 +1,17 @@
+{{- if .Values.workerPool.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "porter.fullname" . }}-worker-pool
+  labels:
+    {{- include "porter.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.workerPool.service.type }}
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "workerPool.selectorLabels" . | nindent 4 }}
+{{- end }}
