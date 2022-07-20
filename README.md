@@ -106,7 +106,7 @@ output "db_master_password" {
 }
 ```
 
-Then, run `terraform init` and `terraform apply`. To output the values from RDS, run `terraform output -json`. 
+Then, run `terraform init` and `terraform apply`. To output the values from RDS, run `terraform output -json`.
 
 ### Step 5: Install Porter Helm chart
 
@@ -168,3 +168,21 @@ server:
 ```
 
 Then, run `helm install porter ../charts/porter --values values.yaml`.
+
+### Adding Users to the Cluster
+
+To add users to the cluster, the following variable declarations are supported in `.infra/eks/main.tf`:
+
+```
+manage_aws_auth_configmap = true
+
+aws_auth_users = {
+  arn: "<user-arn>",
+  group: "system:masters", // the group on the cluster
+}
+
+aws_auth_roles = {
+  arn: "<role-arn>",
+  group: "system:masters", // the group on the cluster
+}
+```
