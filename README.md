@@ -177,12 +177,10 @@ To add users to the cluster, the following variable declarations are supported i
 manage_aws_auth_configmap = true
 
 aws_auth_users = {
-  arn: "<user-arn>",
-  group: "system:masters", // the group on the cluster
+  "<user-arn>": "system:masters", // the group on the cluster
 }
 
 aws_auth_roles = {
-  arn: "<role-arn>",
-  group: "system:masters", // the group on the cluster
+  "<role-arn>": "system:masters", // the group on the cluster
 }
 ```
