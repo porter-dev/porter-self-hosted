@@ -115,3 +115,20 @@ variable "spot_price" {
   type    = string
   default = ""
 }
+
+variable "manage_aws_auth_configmap" {
+  type    = bool
+  default = true
+}
+
+variable "aws_auth_users" {
+  type = map(any)
+
+  default = {}
+}
+
+variable "aws_auth_roles" {
+  type = map(any)
+
+  default = {}
+}

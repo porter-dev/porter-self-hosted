@@ -63,7 +63,26 @@ module "eks" {
   cluster_name    = var.env_name
   cluster_version = var.cluster_version
   subnets         = var.private_subnets
-  enable_irsa     = true
+
+  manage_aws_auth = var.manage_aws_auth_configmap
+
+  map_roles = [
+    for arn, group in var.aws_auth_roles : {
+      rolearn  = arn
+      username = split("/", arn)[1]
+      groups   = [group]
+    }
+  ]
+
+  map_users = [
+    for arn, group in var.aws_auth_users : {
+      userarn  = arn
+      username = split("/", arn)[1]
+      groups   = [group]
+    }
+  ]
+
+  enable_irsa = true
 
   vpc_id = var.vpc_id
 
